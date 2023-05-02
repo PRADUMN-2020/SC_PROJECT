@@ -16,6 +16,7 @@ const double ALPHA = 0.77;
 
 pair<int, int> CORE; // size of our core
 int *WEIGHTED_SUMS;  // weighted sum for the corresponding constraint
+vector<int>X1(NUMBER_OBJECTS,0);
 
 struct Item
 {
@@ -91,6 +92,9 @@ void processData(char *filename)
             break;
         }
     }
+
+
+
 
     /* CAPACITIES */
     CAPACITIES = new int[NUMBER_CONSTRAINTS];
@@ -195,6 +199,7 @@ void processData(char *filename)
         tok = strtok(line, " \t");
     }
 
+
     OPTIMUM = atoi(tok);
 
     delete[] (line);
@@ -212,6 +217,14 @@ void processData(char *filename)
     //         printf("%d: %d, ", j, CONSTRAINTS[i][j]);
     //     cout << endl;
     // }
+}
+
+void setX1()
+{
+    for(int i=0;i<=CORE.first;i++)
+    {
+        X1[ITEMS[i].objId-1]=1;
+    }
 }
 
 /* Evaluating the weighted sums */
@@ -274,7 +287,37 @@ inline void setCoreSize()
     CORE.second = ceil((2 * NUMBER_OBJECTS) / 3) - 1;
 }
 
-// double calc_fitness(vector<int> &chr) {}
+double calc_fitness(vector<int> &chromosome) {
+   double fitness=0;
+   double jaccardSimilarity=0;
+   int intersection=0;
+   int Union=0;
+   int valueSum=0;
+   for(int i=0;i<NUMBER_OBJECTS;i++)
+   {
+      if(X1[i] and chromosome[i])
+      {
+        intersection++;
+      }
+      if(X1[i] or chromosome[i])
+      {
+        Union++;
+      }
+   }
+   jaccardSimilarity=(1.0*intersection)/Union;
+   for(int i=0;i<NUMBER_OBJECTS;i++)
+   {
+    if(chromosome[i]==1)
+    {
+        valueSum+=VALUES[i];
+    }
+   }
+   jaccardSimilarity*=100;
+   fitness=(1+jaccardSimilarity)*valueSum;
+   return fitness;
+
+}
+
 
 void initializePopulation()
 {
@@ -282,14 +325,14 @@ void initializePopulation()
     for(int i=0;i<POPULATION;i++)
     {
         // printf("Population %d:\n", i+1);
- vector<int>chromosome;
+ vector<int>chromosome(NUMBER_OBJECTS,0);
  unordered_set <int> set;
     for (int j = 0; j <= CORE.first; j++) 
     {  
         double alpha_temp = (float) rand()/RAND_MAX;
         if(alpha_temp<=ALPHA)
         {
-            chromosome.push_back(ITEMS[j].objId);
+            chromosome[ITEMS[j].objId-1]=1;
         }
     }
     int remaining_genes=ceil(NUMBER_OBJECTS*0.08);
@@ -299,23 +342,47 @@ void initializePopulation()
         int select = (CORE.first+1) + (rand()%((2*NUMBER_OBJECTS)/3)); 
         if(set.find(select) == set.end())
         {
-             chromosome.push_back(ITEMS[select].objId);
+             chromosome[ITEMS[select].objId-1]=1;
              set.insert(select);  
              count++;
         }
        
     }
-    // double fitness = calc_fitness(chromosome);
+    double fitness = calc_fitness(chromosome);
     Chromosome C;
-    // C.selected_items=chromosome;
-    // // C.fitness=fitness;
-    // Population.push_back(C);
+    C.selected_items=chromosome;
+    C.fitness=fitness;
+    Population.push_back(C);
 
     // for(int j = 0; j < chromosome.size(); j++) {
     //     printf("%d: %d\n", j, chromosome[j]);
     // }
 
     }
+}
+
+void mutation(vector<Chromosome>&offspring)
+{
+    double pm=0.2;
+    for(int i=0;i<offspring.size();i++ )
+    {
+        for(int j=0;j<NUMBER_OBJECTS;j++)
+        {
+        double p=(float) rand()/RAND_MAX;
+        if(p<=pm)
+        {
+            if(offspring[i].selected_items[j]==1)
+            {
+                offspring[i].selected_items[j]=0;
+            }
+            else
+            {
+                offspring[i].selected_items[j]=1;
+            }
+        }
+        }
+    }
+    
 }
 
 
@@ -353,6 +420,7 @@ int main(int argc, char **argv)
 
     // divide items into X1, Core and X0
     setCoreSize();
+    setX1();
 
     // create population
     initializePopulation();
