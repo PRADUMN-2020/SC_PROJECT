@@ -1,7 +1,7 @@
 Commands for running:
 
-g++ cmultiknapsack.cpp
-./a.exe filename format
+g++ code.cpp
+./a.exe data.DAT weing
 
 Data Set Explanation:
 

@@ -11,8 +11,8 @@ int *VALUES;            // populated automatically by processData
 
 const int POPULATION_SIZE = 100; // size of the population
 const int GENERATIONS = 10000;   // number of generations to run the algorithm
-const double ALPHA = 0.787;
-double pm = 0.2;
+const double ALPHA = 0.787;    // prarameter for determining the the amount of X1 to be taken in each chromosome
+double pm = 0.2;   // Mutation probability
 
 pair<int, int> CORE; // size of our core
 int *WEIGHTED_SUMS;  // weighted sum for the corresponding constraint
@@ -469,15 +469,15 @@ int main(int argc, char **argv)
     {
         // Elitism
 
-        sort(Population.begin(), Population.end(), cmp);
-        int lambda = ceil((NUMBER_OBJECTS * 5) / 100);
+        // sort(Population.begin(), Population.end(), cmp);
+        // int lambda = ceil((NUMBER_OBJECTS * 5) / 100);
 
-        // int elitism_threshold = 620000;
-        vector<int> elites;
-        for (int i = 0; i < lambda; i++)
-        {
-            elites.push_back(i);
-        }
+        // // int elitism_threshold = 620000;
+        // vector<int> elites;
+        // for (int i = 0; i < lambda; i++)
+        // {
+        //     elites.push_back(i);
+        // }
 
         // parental selection for creating mating pool
         vector<int> mating_pool(POPULATION_SIZE);
@@ -517,15 +517,16 @@ int main(int argc, char **argv)
         }
 
         // generational model
-        sort(offsprings.begin(), offsprings.end(), cmp);
-        for (int i = 0; i < elites.size(); i++)
-        {
-            Population[i] = Population[elites[i]];
-        }
-        for (int i = elites.size(); i < POPULATION_SIZE; i++)
-        {
-            Population[i] = offsprings[i - elites.size()];
-        }
+        // sort(offsprings.begin(), offsprings.end(), cmp);
+        // for (int i = 0; i < elites.size(); i++)
+        // {
+        //     Population[i] = Population[elites[i]];
+        // }
+        // for (int i = elites.size(); i < POPULATION_SIZE; i++)
+        // {
+        //     Population[i] = offsprings[i - elites.size()];
+        // }
+        Population=offsprings;
         n++;
     }
     cout << "The global best solution's fitness: " << global_best.fitness << endl;
